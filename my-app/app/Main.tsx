@@ -25,10 +25,17 @@ function ArrowButton({
       disabled={disabled}
       aria-label={direction === "left" ? "Previous level" : "Next level"}
       className={`relative size-[60px] shrink-0 transition-opacity ${
-        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:opacity-90"
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : "cursor-pointer hover:opacity-90"
       } ${direction === "left" ? "rotate-[180deg] scale-y-[-100%]" : ""}`}
     >
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 60 60">
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 60 60"
+      >
         <g>
           <rect fill={rectFill} height="60" rx="6" width="60" />
           <path d={svgPaths.p3c899c00} fill={arrowFill} />
@@ -51,9 +58,16 @@ function Components({
   const isLastLevel = level === 10;
 
   return (
-    <div className="bg-[#e4ecff] content-stretch flex gap-[36px] items-center justify-center overflow-clip relative rounded-[6px] shrink-0" data-name="Components">
+    <div
+      className="bg-[#e4ecff] content-stretch flex gap-[36px] items-center justify-center overflow-clip relative rounded-[6px] shrink-0"
+      data-name="Components"
+    >
       <div className="flex items-center justify-center relative shrink-0">
-        <ArrowButton disabled={isFirstLevel} onClick={onPrev} direction="left" />
+        <ArrowButton
+          disabled={isFirstLevel}
+          onClick={onPrev}
+          direction="left"
+        />
       </div>
       <div className="flex flex-col font-['Lexend',sans-serif] font-normal h-[38px] justify-center leading-[0] relative shrink-0 text-[#ff4040] text-[25px] w-[149px] text-center">
         <p className="leading-[normal]">Level {level}/10</p>
@@ -76,7 +90,9 @@ function Heading({
     <div className="relative shrink-0 w-full" data-name="heading">
       <div className="flex flex-row items-center justify-center overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex gap-[100px] items-center justify-center p-[20px] relative w-full">
-          <p className="font-madimi h-[106px] leading-[normal] not-italic relative shrink-0 text-[#ff4040] text-[80px] w-[477px]">AffineAffinity</p>
+          <p className="font-madimi h-[106px] leading-[normal] not-italic relative shrink-0 text-[#ff4040] text-[80px] w-[477px]">
+            AffineAffinity
+          </p>
           <Components level={level} onPrev={onPrev} onNext={onNext} />
         </div>
       </div>
@@ -84,32 +100,131 @@ function Heading({
   );
 }
 
-function Tutorial() {
+const tutorialTexts = [
+  {
+    intro:
+      "Welcome to AffineAffinity, a game where you do affine transformations on images of Scotty by writing transformation matrices!",
+    info: "Transformation matrices warp images by changing their pixel indices. Translation matrices shift images without stretching or rotating them.",
+    link: {
+      href: "https://en.wikipedia.org/wiki/Affine_transformation",
+      label: "Here's more information about transformation matrices.",
+    },
+    action:
+      "Start creating your own matrix to move Scotty to the right 20 and down 20 by changing the tx and ty values.",
+  },
+  {
+    intro: "Let's try another practice.",
+    info: "Remember, translation matrices shift positions without stretching or rotating.",
+    action:
+      "This time, change the tx and ty values to move Scotty up 30 and left 10.",
+  },
+  {
+    intro:
+      "Now you're getting the hang of it! This time we will scale Scotty to shrink or grow.",
+    info: "The s variable controls scaling. Values greater than 1 to enlarge Scotty, and values between 0 and 1 to shrink him.",
+    action: "Shrink Scotty down to half his size.",
+  },
+  {
+    intro: "",
+    info: "Keep adjusting the s variable to see how Scotty scales up and down.",
+    action: "Grow Scotty to 2.5 times his original size.",
+  },
+  {
+    intro: "Let's shear Scotty this time.",
+    info: "Change the g variable to see how Scotty skews.",
+    action: "Skew Scotty horizontally by 20.",
+  },
+  {
+    intro: "Now we will do it again vertically.",
+    info: "Change the h variable to see how Scotty skews this time.",
+    action: "Skew Scotty vertically by 40.",
+  },
+  {
+    intro: "Let's keep shearing Scotty, but this time combine both horizontal and vertical shears.",
+    info: "Isolate one variable to understand how it behaves on its own.",
+    action: "Skew Scotty horizontally by 25 and vertically by 10.",
+  },
+  {
+    intro: "Lets combine all the variables we have learned so far.",
+    info: "Remember how these transformations build on each other in the matrix:",
+    bullets: [
+      "Translation (tx, ty) shifts position.",
+      "Scaling (s) resizes the image.",
+      "Shearing (g, h) skews the image.",
+    ],
+    action: "Try to warp Scotty to match the image on top.",
+  },
+  {
+    intro:" Great, do it again!",
+    info: "Remember how these transformations build on each other in the matrix:",
+    bullets: [
+      "Translation (tx, ty) shifts position.",
+      "Scaling (s) resizes the image.",
+      "Shearing (g, h) skews the image.",
+    ],
+    action: "Try to warp Scotty to match the image on top.",
+  },
+  {
+    intro: "Final challenge!",
+    info: "Remember how these transformations build on each other in the matrix:",
+    bullets: [
+      "Translation (tx, ty) shifts position.",
+      "Scaling (s) resizes the image.",
+      "Shearing (g, h) skews the image.",
+    ],
+    action: "Try to warp Scotty to match the image on top.",
+  },
+];
+
+function Tutorial({ level }: { level: number }) {
+  const clampedIndex = Math.min(
+    Math.max(level - 1, 0),
+    tutorialTexts.length - 1
+  );
+  const tutorialText = tutorialTexts[clampedIndex];
+
   return (
-        <div className="box-border content-stretch flex gap-[110px] items-center justify-center px-[40px] py-0 relative w-full">
-          <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[25px] text-black w-[869px]">
-            <p className="mb-0">{`Welcome to AffineAffinity, a game where you do affine transformations on images of Scotty by writing transformation matrices! `}</p>
-            <p className="mb-0">&nbsp;</p>
-            <p className="mb-0">
-              <span>{`Transformation matrices warp images by changing their pixel indices. `}</span>
-              <a className="[text-underline-position:from-font] cursor-pointer decoration-solid underline" href="https://en.wikipedia.org/wiki/Affine_transformation">
-                <span className="[text-underline-position:from-font] decoration-solid leading-[normal]" href="https://en.wikipedia.org/wiki/Affine_transformation">
-                  Here's more information about transformation matrices.
+    <div className="box-border content-stretch flex gap-[110px] items-center justify-center px-[40px] py-0 relative w-full">
+      <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[25px] text-black w-[869px]">
+        <p className="mb-4">{tutorialText.intro}</p>
+        {tutorialText.info && (
+          <p className="mb-4">
+            <span>{tutorialText.info} </span>
+            {tutorialText.link && (
+              <a
+                className="[text-underline-position:from-font] cursor-pointer decoration-solid underline"
+                href={tutorialText.link.href}
+              >
+                <span className="[text-underline-position:from-font] decoration-solid leading-[normal]">
+                  {tutorialText.link.label}
                 </span>
               </a>
-            </p>
-            <p className="mb-0">&nbsp;</p>
-            <p>Start creating your own matrix to move Scotty to the right 20 and down 20 by changing the tx and ty values.</p>
-          </div>
-        </div>
+            )}
+          </p>
+        )}
+        {tutorialText.bullets && tutorialText.bullets.length > 0 && (
+          <ul className="list-disc pl-6 space-y-2 mb-4">
+            {tutorialText.bullets.map((bullet, idx) => (
+              <li key={idx}>{bullet}</li>
+            ))}
+          </ul>
+        )}
+        {tutorialText.action && <p className="mb-0">{tutorialText.action}</p>}
+      </div>
+    </div>
   );
 }
 
 function Frame() {
   return (
     <div className="bg-white box-border content-stretch flex flex-col gap-[14px] items-center justify-center overflow-clip pb-[30px] pt-[19px] px-[21px] relative rounded-[30px] shrink-0">
-      <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">original image</p>
-      <div className="relative shrink-0 size-[236px]" data-name="mascotStory_236x236 2">
+      <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">
+        original image
+      </p>
+      <div
+        className="relative shrink-0 size-[236px]"
+        data-name="mascotStory_236x236 2"
+      >
         <Image
           alt="Scotty"
           src={scottyImg}
@@ -160,8 +275,16 @@ function MatrixGrid({ tx, ty }: { tx: number; ty: number }) {
 function Frame1({ tx, ty }: { tx: number; ty: number }) {
   return (
     <div className="bg-white box-border gap-[50px] grid items-center justify-items-center grid-cols-[32px_minmax(0,_1fr)_32px] grid-rows-[repeat(2,_minmax(0px,_1fr))] h-[273px] overflow-clip pb-[100px] pt-[30px] px-[30px] relative rounded-[30px] shrink-0 w-[310px]">
-      <div className="[grid-area:2_/_1] h-[142px] relative shrink-0 w-[32px]" data-name="Vector">
-        <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 142">
+      <div
+        className="[grid-area:2_/_1] h-[142px] relative shrink-0 w-[32px]"
+        data-name="Vector"
+      >
+        <svg
+          className="block size-full"
+          fill="none"
+          preserveAspectRatio="none"
+          viewBox="0 0 32 142"
+        >
           <g id="Vector">
             <path d="M0 0H32V13H0V0Z" fill="var(--fill-0, black)" />
             <path d="M0 129H32V142H0V129Z" fill="var(--fill-0, black)" />
@@ -169,11 +292,18 @@ function Frame1({ tx, ty }: { tx: number; ty: number }) {
           </g>
         </svg>
       </div>
-      <p className="[grid-area:1_/_1_/_auto_/_span_3] font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] self-start text-[30px] text-center">matrix</p>
+      <p className="[grid-area:1_/_1_/_auto_/_span_3] font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] self-start text-[30px] text-center">
+        matrix
+      </p>
       <div className="[grid-area:2_/_3] flex items-center justify-center relative shrink-0">
         <div className="flex-none rotate-[180deg] scale-y-[-100%]">
           <div className="h-[142px] relative w-[32px]" data-name="Vector">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 142">
+            <svg
+              className="block size-full"
+              fill="none"
+              preserveAspectRatio="none"
+              viewBox="0 0 32 142"
+            >
               <g id="Vector">
                 <path d="M0 0H32V13H0V0Z" fill="var(--fill-0, black)" />
                 <path d="M0 129H32V142H0V129Z" fill="var(--fill-0, black)" />
@@ -190,11 +320,17 @@ function Frame1({ tx, ty }: { tx: number; ty: number }) {
   );
 }
 
-function Group3({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+function Group3({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+}) {
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const slider = e.currentTarget;
     const rect = slider.getBoundingClientRect();
-    
+
     const updateValue = (clientX: number) => {
       const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
       const newValue = Math.round((x / rect.width) * 100 - 50);
@@ -220,26 +356,55 @@ function Group3({ value, onChange }: { value: number; onChange: (value: number) 
   const barWidth = position;
 
   return (
-    <div 
+    <div
       className="h-[11px] relative shrink-0 w-[229px] cursor-pointer"
       onMouseDown={handleMouseDown}
     >
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 229 11">
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 229 11"
+      >
         <g id="Group 4">
-          <rect fill="var(--fill-0, #D9D9D9)" height="11" id="Rectangle 57" rx="5.5" width="229" />
-          <rect fill="var(--fill-0, #A2E538)" height="11" id="Rectangle 58" rx="5.5" width={barWidth} />
-          <circle cx={position} cy="5.5" fill="var(--fill-0, #6CA512)" id="Ellipse 280" r="5.5" />
+          <rect
+            fill="var(--fill-0, #D9D9D9)"
+            height="11"
+            id="Rectangle 57"
+            rx="5.5"
+            width="229"
+          />
+          <rect
+            fill="var(--fill-0, #A2E538)"
+            height="11"
+            id="Rectangle 58"
+            rx="5.5"
+            width={barWidth}
+          />
+          <circle
+            cx={position}
+            cy="5.5"
+            fill="var(--fill-0, #6CA512)"
+            id="Ellipse 280"
+            r="5.5"
+          />
         </g>
       </svg>
     </div>
   );
 }
 
-function Group2({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+function Group2({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+}) {
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const slider = e.currentTarget;
     const rect = slider.getBoundingClientRect();
-    
+
     const updateValue = (clientX: number) => {
       const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
       const newValue = Math.round((x / rect.width) * 100 - 50);
@@ -265,40 +430,89 @@ function Group2({ value, onChange }: { value: number; onChange: (value: number) 
   const barWidth = position;
 
   return (
-    <div 
+    <div
       className="h-[11px] relative shrink-0 w-[229px] cursor-pointer"
       onMouseDown={handleMouseDown}
     >
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 229 11">
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 229 11"
+      >
         <g id="Group 3">
-          <rect fill="var(--fill-0, #D9D9D9)" height="11" id="Rectangle 55" rx="5.5" width="229" />
-          <rect fill="var(--fill-0, #DA73FF)" height="11" id="Rectangle 56" rx="5.5" width={barWidth} />
-          <circle cx={position} cy="5.5" fill="var(--fill-0, #8000AF)" id="Ellipse 279" r="5.5" />
+          <rect
+            fill="var(--fill-0, #D9D9D9)"
+            height="11"
+            id="Rectangle 55"
+            rx="5.5"
+            width="229"
+          />
+          <rect
+            fill="var(--fill-0, #DA73FF)"
+            height="11"
+            id="Rectangle 56"
+            rx="5.5"
+            width={barWidth}
+          />
+          <circle
+            cx={position}
+            cy="5.5"
+            fill="var(--fill-0, #8000AF)"
+            id="Ellipse 279"
+            r="5.5"
+          />
         </g>
       </svg>
     </div>
   );
 }
 
-function Frame3({ tx, ty, onTxChange, onTyChange }: { tx: number; ty: number; onTxChange: (value: number) => void; onTyChange: (value: number) => void }) {
+function Frame3({
+  tx,
+  ty,
+  onTxChange,
+  onTyChange,
+}: {
+  tx: number;
+  ty: number;
+  onTxChange: (value: number) => void;
+  onTyChange: (value: number) => void;
+}) {
   return (
     <div className="bg-white box-border content-stretch flex flex-col gap-[17px] items-center justify-center overflow-clip p-[30px] relative rounded-[30px] shrink-0">
-      <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">variables</p>
-      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#6ca512] text-[40px] text-nowrap whitespace-pre">tx = {tx}</p>
+      <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">
+        variables
+      </p>
+      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#6ca512] text-[40px] text-nowrap whitespace-pre">
+        tx = {tx}
+      </p>
       <Group3 value={tx} onChange={onTxChange} />
-      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#8000af] text-[40px] text-nowrap whitespace-pre">ty = {ty}</p>
+      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#8000af] text-[40px] text-nowrap whitespace-pre">
+        ty = {ty}
+      </p>
       <Group2 value={ty} onChange={onTyChange} />
     </div>
   );
 }
 
-function Question({ tx, ty, onTxChange, onTyChange }: { tx: number; ty: number; onTxChange: (value: number) => void; onTyChange: (value: number) => void }) {
+function Question({
+  tx,
+  ty,
+  onTxChange,
+  onTyChange,
+}: {
+  tx: number;
+  ty: number;
+  onTxChange: (value: number) => void;
+  onTyChange: (value: number) => void;
+}) {
   return (
-        <div className="box-border content-stretch flex gap-[32px] items-center justify-center px-[40px] py-[35px] relative w-full">
-          <Frame />
-          <Frame1 tx={tx} ty={ty} />
-          <Frame3 tx={tx} ty={ty} onTxChange={onTxChange} onTyChange={onTyChange} />
-        </div>
+    <div className="box-border content-stretch flex gap-[32px] items-center justify-center px-[40px] py-[35px] relative w-full">
+      <Frame />
+      <Frame1 tx={tx} ty={ty} />
+      <Frame3 tx={tx} ty={ty} onTxChange={onTxChange} onTyChange={onTyChange} />
+    </div>
   );
 }
 
@@ -320,10 +534,18 @@ function Problem({
   onTyChange: (value: number) => void;
 }) {
   return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-[1005px]" data-name="problem">
+    <div
+      className="content-stretch flex flex-col items-start relative shrink-0 w-[1005px]"
+      data-name="problem"
+    >
       <Heading level={level} onPrev={onPrevLevel} onNext={onNextLevel} />
-      <Tutorial />
-      <Question tx={tx} ty={ty} onTxChange={onTxChange} onTyChange={onTyChange} />
+      <Tutorial level={level} />
+      <Question
+        tx={tx}
+        ty={ty}
+        onTxChange={onTxChange}
+        onTyChange={onTyChange}
+      />
     </div>
   );
 }
@@ -335,29 +557,60 @@ function Frame5() {
 function Frame4() {
   return (
     <div className="bg-[#ca6262] box-border content-stretch flex gap-[10px] h-[51px] items-center justify-center overflow-clip px-[41px] py-px relative rounded-[15px] shrink-0">
-      <p className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[#bebebe] text-[30px] text-center w-[85px]">next</p>
+      <p className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[#bebebe] text-[30px] text-center w-[85px]">
+        next
+      </p>
     </div>
   );
 }
 
 function Answer() {
   return (
-    <div className="bg-[#ff9e9e] box-border content-stretch flex flex-col gap-[40px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0" data-name="answer">
-      <p className="font-['Lexend',sans-serif] font-normal h-[100px] leading-[normal] relative shrink-0 text-[100px] text-white w-[227px]">Goal</p>
-      <div className="relative shrink-0 size-[236px]" data-name="mascotStory_236x236 3">
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+    <div
+      className="bg-[#ff9e9e] box-border content-stretch flex flex-col gap-[40px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0"
+      data-name="answer"
+    >
+      <p className="font-['Lexend',sans-serif] font-normal h-[100px] leading-[normal] relative shrink-0 text-[100px] text-white w-[227px]">
+        Goal
+      </p>
+      <div
+        className="relative shrink-0 size-[236px]"
+        data-name="mascotStory_236x236 3"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+        >
           <div className="absolute bg-black inset-0" />
           <div className="absolute inset-0 overflow-hidden">
-            <Image alt="Scotty goal" src={scottyImg} fill className="object-contain" sizes="236px" />
+            <Image
+              alt="Scotty goal"
+              src={scottyImg}
+              fill
+              className="object-contain"
+              sizes="236px"
+            />
           </div>
         </div>
       </div>
       <Frame5 />
-      <div className="relative shrink-0 size-[236px]" data-name="mascotStory_236x236 2">
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+      <div
+        className="relative shrink-0 size-[236px]"
+        data-name="mascotStory_236x236 2"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+        >
           <div className="absolute bg-black inset-0" />
           <div className="absolute inset-0 overflow-hidden">
-            <Image alt="Scotty transformed" src={scottyImg} fill className="object-contain" sizes="236px" />
+            <Image
+              alt="Scotty transformed"
+              src={scottyImg}
+              fill
+              className="object-contain"
+              sizes="236px"
+            />
           </div>
         </div>
       </div>
@@ -383,7 +636,10 @@ export default function Main({ level }: { level: number }) {
   };
 
   return (
-    <div className="bg-[#ffd3d3] content-stretch flex items-center relative size-full justify-space-between" data-name="MAIN">
+    <div
+      className="bg-[#ffd3d3] content-stretch flex items-center relative size-full justify-space-between"
+      data-name="MAIN"
+    >
       <Problem
         level={level}
         onPrevLevel={handlePrevLevel}
