@@ -6,12 +6,33 @@ import { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-rgf6n3wvt2";
 import scottyImg from "./assets/images/scotty.png";
 
+type LevelTarget = {
+  tx?: number;
+  ty?: number;
+  s?: number;
+  g?: number;
+  h?: number;
+  nextLevel: number;
+};
+
+const STORAGE_VALUES_KEY = "affineAffinityValues";
+
 declare global {
   interface Window {
     katex?: {
       render: (tex: string, el: HTMLElement, options?: Record<string, unknown>) => void;
     };
   }
+}
+
+function getDefaultValues(level: number) {
+  return {
+    tx: 0,
+    ty: 0,
+    s: 1,
+    g: 0,
+    h: 0,
+  };
 }
 
 function MathFormula({ latex }: { latex: string }) {
@@ -57,6 +78,51 @@ function MathFormula({ latex }: { latex: string }) {
     >
       {latex}
     </span>
+  );
+}
+
+function ProgressMenu({
+  level,
+  solvedLevels,
+  currentSolved,
+  onNavigate,
+}: {
+  level: number;
+  solvedLevels: Set<number>;
+  currentSolved: boolean;
+  onNavigate: (lv: number) => void;
+}) {
+  return (
+    <div className="bg-white/80 border border-[#ff9e9e] rounded-xl p-4 shadow-sm w-[160px]">
+      <p className="text-[#ff4040] font-semibold mb-3 text-center">Progress</p>
+      <ul className="space-y-2">
+        {Array.from({ length: 10 }, (_, idx) => {
+          const lv = idx + 1;
+          const completed = solvedLevels.has(lv) || (lv === level && currentSolved);
+          const active = lv === level;
+          return (
+            <li key={lv}>
+              <button
+                type="button"
+                onClick={() => onNavigate(lv)}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 transition-colors ${
+                  active ? "bg-[#ffe8e8]" : "hover:bg-[#dbe8ff]"
+                }`}
+              >
+                <span className="text-sm text-[#333] text-left">Level {lv}</span>
+                <span
+                  className={`text-sm font-semibold ${
+                    completed ? "text-[#1CAFBF]" : "text-[#bebebe]"
+                  }`}
+                >
+                  {completed ? "✓" : "•"}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -160,13 +226,17 @@ function Heading({
 const tutorialTexts = [
   {
     intro:
-      "Welcome to AffineAffinity, a game where you do affine transformations on images of Scotty by writing transformation matrices!",
-    info: "An affine transform multiplies homogeneous coordinates in [x, y, 1] by a 3x3 matrix to produce new coordinates—each column of the matrix controls how x, y, and translation combine to form the new position.",
-    latex: "\\begin{aligned} &\\begin{bmatrix}x'\\\\y'\\\\1\\end{bmatrix} = M \\cdot \\begin{bmatrix}x\\\\y\\\\1\\end{bmatrix}\\\\[6pt] &\\text{where } M = \\begin{bmatrix}s & g & tx\\\\ h & s & ty\\\\ 0 & 0 & 1\\end{bmatrix}\\end{aligned}",
+      "Welcome to AffineAffinity, a game where you do affine transformations on images of Scotty by writing transformation matrices! This project is inspired by",
     link: {
-      href: "https://en.wikipedia.org/wiki/Affine_transformation",
+      href: "https://en.wikipedia.org/wiki/Affine_transformation#Image_transformation",
       label: "Here's more information about transformation matrices.",
     },
+    extraLink: {
+      href: "https://flexboxfroggy.com/",
+      label: "Flexbox Froggy",
+    },
+    info: "An affine transform multiplies homogeneous coordinates in [x, y, 1] by a 3x3 matrix to produce new coordinates—each column of the matrix controls how x, y, and translation combine to form the new position.",
+    latex: "\\begin{aligned} &\\begin{bmatrix}x'\\\\y'\\\\1\\end{bmatrix} = M \\cdot \\begin{bmatrix}x\\\\y\\\\1\\end{bmatrix}\\\\[6pt] &\\text{where } M = \\begin{bmatrix}s & 0 & tx\\\\ 0 & s & ty\\\\ g & h & 1\\end{bmatrix}\\end{aligned}",
     action:
       "Start creating your own matrix to move Scotty to the right 20 and down 20 by changing the tx and ty values.",
   },
@@ -234,6 +304,37 @@ const tutorialTexts = [
   },
 ];
 
+function getLevelTarget(level: number): LevelTarget | undefined {
+  const targets: Record<number, LevelTarget> = {
+    1: { tx: 20, ty: 20, nextLevel: 2 },
+    2: { tx: -10, ty: -30, nextLevel: 3 },
+    3: { s: 0.5, nextLevel: 4 },
+    4: { s: 2.5, nextLevel: 5 },
+    5: { g: 20, nextLevel: 6 },
+    6: { h: 40, nextLevel: 7 },
+    7: { g: 25, h: 10, nextLevel: 8 },
+    8: { tx: 25, ty: 25, s: 1.0, g: 0, h: 15, nextLevel: 9 },
+    9: { tx: -20, ty: 0, s: 2.0, g: 15, h: 0, nextLevel: 10 },
+    10: { tx: -15, ty: 20, s: 1.5, g: -30, h: 20, nextLevel: 10 },
+  };
+  return targets[level];
+}
+
+function isLevelSolved(
+  level: number,
+  values: { tx: number; ty: number; s: number; g: number; h: number }
+): boolean {
+  const target = getLevelTarget(level);
+  if (!target) return false;
+  return (
+    (target.tx === undefined || target.tx === values.tx) &&
+    (target.ty === undefined || target.ty === values.ty) &&
+    (target.s === undefined || target.s === values.s) &&
+    (target.g === undefined || target.g === values.g) &&
+    (target.h === undefined || target.h === values.h)
+  );
+}
+
 function Tutorial({ level }: { level: number }) {
   const clampedIndex = Math.min(
     Math.max(level - 1, 0),
@@ -243,14 +344,24 @@ function Tutorial({ level }: { level: number }) {
 
   return (
     <div className="box-border content-stretch flex gap-[110px] items-center justify-center px-[40px] py-0 relative w-full">
-      <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[18px] text-black w-[869px]">
-        <p className="mb-4">{tutorialText.intro}</p>
+      <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[15px] text-black w-[869px]">
+        <p className="mb-4">
+          {tutorialText.intro}{" "}
+          {tutorialText.extraLink && (
+            <a
+              className="text-black underline hover:text-[#3f5fb1]"
+              href={tutorialText.extraLink.href}
+            >
+              {tutorialText.extraLink.label}
+            </a>
+          )}
+        </p>
         {tutorialText.info && (
           <p className="mb-4">
             <span>{tutorialText.info} </span>
             {tutorialText.link && (
               <a
-                className="[text-underline-position:from-font] cursor-pointer decoration-solid underline"
+                className="[text-underline-position:from-font] cursor-pointer decoration-solid underline text-black hover:text-[#3f5fb1]"
                 href={tutorialText.link.href}
               >
                 <span className="[text-underline-position:from-font] decoration-solid leading-[normal]">
@@ -761,6 +872,7 @@ function Frame3({
   onSChange,
   onGChange,
   onHChange,
+  onReset,
 }: {
   level: number;
   tx: number;
@@ -773,6 +885,7 @@ function Frame3({
   onSChange: (value: number) => void;
   onGChange: (value: number) => void;
   onHChange: (value: number) => void;
+  onReset: () => void;
 }) {
   const isScaleLevel = level === 3 || level === 4;
   const isShearLevel = level === 5 || level === 6 || level === 7;
@@ -781,7 +894,7 @@ function Frame3({
   const isAllLevel = level >= 8;
 
   return (
-    <div className="bg-white box-border content-stretch flex flex-col gap-[17px] items-center justify-center overflow-clip p-[30px] relative rounded-[30px] shrink-0">
+    <div className="bg-white box-border content-stretch flex flex-col gap-[10px] items-center justify-center overflow-clip p-[30px] relative rounded-[30px] shrink-0">
       <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">
         variables
       </p>
@@ -846,6 +959,13 @@ function Frame3({
           <Group2 value={ty} onChange={onTyChange} />
         </>
       )}
+      <button
+        type="button"
+        onClick={onReset}
+        className="mt-2 px-4 py-2 rounded-lg bg-[#e4ecff] text-[#5377d1] text-sm font-semibold hover:bg-[#d6e2ff] transition-colors"
+      >
+        Reset
+      </button>
     </div>
   );
 }
@@ -862,6 +982,7 @@ function Question({
   onSChange,
   onGChange,
   onHChange,
+  onReset,
 }: {
   level: number;
   tx: number;
@@ -874,6 +995,7 @@ function Question({
   onSChange: (value: number) => void;
   onGChange: (value: number) => void;
   onHChange: (value: number) => void;
+  onReset: () => void;
 }) {
   return (
     <div className="box-border content-stretch flex gap-[30px] items-center justify-center px-[40px] py-[30px] relative w-full">
@@ -891,6 +1013,7 @@ function Question({
         onSChange={onSChange}
         onGChange={onGChange}
         onHChange={onHChange}
+        onReset={onReset}
       />
     </div>
   );
@@ -910,6 +1033,7 @@ function Problem({
   onSChange,
   onGChange,
   onHChange,
+  onReset,
 }: {
   level: number;
   onPrevLevel: () => void;
@@ -924,6 +1048,7 @@ function Problem({
   onSChange: (value: number) => void;
   onGChange: (value: number) => void;
   onHChange: (value: number) => void;
+  onReset: () => void;
 }) {
   return (
     <div
@@ -944,6 +1069,7 @@ function Problem({
         onSChange={onSChange}
         onGChange={onGChange}
         onHChange={onHChange}
+        onReset={onReset}
       />
     </div>
   );
@@ -968,30 +1094,8 @@ function Frame4({
   g: number;
   h: number;
 }) {
-  const targets: Record<
-    number,
-    { tx?: number; ty?: number; s?: number; g?: number; h?: number; nextLevel: number }
-  > = {
-    1: { tx: 20, ty: 20, nextLevel: 2 },
-    2: { tx: -10, ty: -30, nextLevel: 3 },
-    3: { s: 0.5, nextLevel: 4 },
-    4: { s: 2.5, nextLevel: 5 },
-    5: { g: 20, nextLevel: 6 },
-    6: { h: 40, nextLevel: 7 },
-    7: { g: 25, h: 10, nextLevel: 8 },
-    8: { tx: 25, ty: 25, s: 1.0, g: 0, h: 15, nextLevel: 9 },
-    9: { tx: -20, ty: 0, s: 2.0, g: 15, h: 0, nextLevel: 10 },
-    10: { tx: -15, ty: 20, s: 1.5, g: -30, h: 20, nextLevel: 10 },
-  };
-
-  const target = targets[level];
-  const solved =
-    target !== undefined &&
-    (target.tx === undefined || target.tx === tx) &&
-    (target.ty === undefined || target.ty === ty) &&
-    (target.s === undefined || target.s === s) &&
-    (target.g === undefined || target.g === g) &&
-    (target.h === undefined || target.h === h);
+  const target = getLevelTarget(level);
+  const solved = isLevelSolved(level, { tx, ty, s, g, h });
   const gateLevel = target !== undefined;
 
   const isFinalLevel = level === 10;
@@ -1045,7 +1149,7 @@ function Answer({ level, tx, ty, s, g, h }: { level: number; tx: number; ty: num
 
   return (
     <div
-      className="bg-[#ff9e9e] box-border align-center justify-center content-stretch flex flex-col gap-[20px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0"
+      className="bg-[#ff9e9e] box-border align-center justify-center content-stretch flex flex-col gap-[20px] items-center overflow-clip px-[70px] py-[20px] h-screen relative shrink-0"
       data-name="answer"
     >
       <p className="font-['Lexend',sans-serif] font-normal h-[100px] leading-[normal] relative shrink-0 text-[50px] text-white text-center w-[227px]">
@@ -1090,11 +1194,83 @@ function Answer({ level, tx, ty, s, g, h }: { level: number; tx: number; ty: num
 
 export default function Main({ level }: { level: number }) {
   const router = useRouter();
-  const [tx, setTx] = useState(0);
-  const [ty, setTy] = useState(0);
-  const [s, setS] = useState(1);
-  const [g, setG] = useState(0);
-  const [h, setH] = useState(0);
+  const defaults = getDefaultValues(level);
+  const [tx, setTx] = useState(defaults.tx);
+  const [ty, setTy] = useState(defaults.ty);
+  const [s, setS] = useState(defaults.s);
+  const [g, setG] = useState(defaults.g);
+  const [h, setH] = useState(defaults.h);
+  const [solvedLevels, setSolvedLevels] = useState<Set<number>>(new Set());
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // load solved levels once (kept across pages)
+    const stored = window.localStorage.getItem("affineAffinitySolved");
+    if (stored) {
+      try {
+        const parsed: number[] = JSON.parse(stored);
+        setSolvedLevels(new Set(parsed));
+      } catch {
+        setSolvedLevels(new Set());
+      }
+    }
+
+    // load slider values for this level
+    const defaults = getDefaultValues(level);
+    const storedValues = window.localStorage.getItem(STORAGE_VALUES_KEY);
+    let saved = defaults;
+    if (storedValues) {
+      try {
+        const parsed: Record<string, { tx: number; ty: number; s: number; g: number; h: number }> =
+          JSON.parse(storedValues);
+        saved = parsed[String(level)] ?? defaults;
+      } catch {
+        saved = defaults;
+      }
+    }
+    setTx(saved.tx);
+    setTy(saved.ty);
+    setS(saved.s);
+    setG(saved.g);
+    setH(saved.h);
+
+    setHydrated(true);
+  }, [level]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !hydrated) return;
+    window.localStorage.setItem("affineAffinitySolved", JSON.stringify(Array.from(solvedLevels)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, solvedLevels]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !hydrated) return;
+    const raw = window.localStorage.getItem(STORAGE_VALUES_KEY);
+    let parsed: Record<string, { tx: number; ty: number; s: number; g: number; h: number }> = {};
+    if (raw) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = {};
+      }
+    }
+    parsed[String(level)] = { tx, ty, s, g, h };
+    window.localStorage.setItem(STORAGE_VALUES_KEY, JSON.stringify(parsed));
+  }, [hydrated, level, tx, ty, s, g, h]);
+
+  useEffect(() => {
+    const solved = isLevelSolved(level, { tx, ty, s, g, h });
+    if (solved) {
+      setSolvedLevels((prev) => {
+        if (prev.has(level)) return prev;
+        const next = new Set(prev);
+        next.add(level);
+        return next;
+      });
+    }
+  }, [level, tx, ty, s, g, h]);
   const handlePrevLevel = () => {
     if (level > 1) {
       router.push(`/level/${level - 1}`);
@@ -1107,9 +1283,18 @@ export default function Main({ level }: { level: number }) {
     }
   };
 
+  const handleReset = () => {
+    const defaults = getDefaultValues(level);
+    setTx(defaults.tx);
+    setTy(defaults.ty);
+    setS(defaults.s);
+    setG(defaults.g);
+    setH(defaults.h);
+  };
+
   return (
     <div
-      className="bg-[#ffd3d3] content-stretch flex items-center relative size-full"
+      className="bg-[#ffd3d3] content-stretch flex items-center gap-12 relative size-full justify-center"
       data-name="MAIN"
     >
       <Problem
@@ -1126,8 +1311,17 @@ export default function Main({ level }: { level: number }) {
         onSChange={setS}
         onGChange={setG}
         onHChange={setH}
+        onReset={handleReset}
       />
-      <Answer level={level} tx={tx} ty={ty} s={s} g={g} h={h} />
+      <div className="flex items-center gap-6">
+        <Answer level={level} tx={tx} ty={ty} s={s} g={g} h={h} />
+        <ProgressMenu
+          level={level}
+          solvedLevels={solvedLevels}
+          currentSolved={isLevelSolved(level, { tx, ty, s, g, h })}
+          onNavigate={(lv) => router.push(`/level/${lv}`)}
+        />
+      </div>
     </div>
   );
 }
