@@ -15,4 +15,4 @@ npm run dev
 - Tailwind CSS 4.1.17
 
 ## Code:
-Technical notes and documentation for Main.tsx are in my-app/README.md.
+Technical notes and documentation for Main.tsx are in [my-app/README.md](https://github.com/qwistaycat/ssui-final-project/blob/main/my-app/README.md).
