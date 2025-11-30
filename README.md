@@ -10,7 +10,7 @@ npm run dev
 ```
 
 ## Framework / Toolkit dependencies:
-React.js
-Next.js
-Tailwind CSS
+- React.js
+- Next.js
+- Tailwind CSS
 
