@@ -87,7 +87,10 @@ function Heading({
   onNext: () => void;
 }) {
   return (
-    <div className="relative shrink-0 w-full" data-name="heading">
+    <div
+      className="relative shrink-0 w-full"
+      data-name="heading"
+    >
       <div className="flex flex-row items-center justify-center overflow-clip rounded-[inherit] size-full">
         <div className="box-border content-stretch flex gap-[100px] items-center justify-center p-[20px] relative w-full">
           <p className="font-madimi h-[106px] leading-[normal] not-italic relative shrink-0 text-[#ff4040] text-[80px] w-[477px]">
@@ -185,7 +188,7 @@ function Tutorial({ level }: { level: number }) {
 
   return (
     <div className="box-border content-stretch flex gap-[110px] items-center justify-center px-[40px] py-0 relative w-full">
-      <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[25px] text-black w-[869px]">
+      <div className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[18px] text-black w-[869px]">
         <p className="mb-4">{tutorialText.intro}</p>
         {tutorialText.info && (
           <p className="mb-4">
@@ -238,32 +241,62 @@ function Frame() {
   );
 }
 
-function MatrixGrid({ tx, ty }: { tx: number; ty: number }) {
+function MatrixGrid({
+  mode,
+  tx,
+  ty,
+  s,
+  g,
+  h,
+}: {
+  mode: "translate" | "scale" | "shear" | "all";
+  tx: number;
+  ty: number;
+  s: number;
+  g: number;
+  h: number;
+}) {
+  const isScale = mode === "scale";
+  const isShear = mode === "shear";
+  const isAll = mode === "all";
+
   return (
     <div className="[grid-area:2_/_2] bg-white font-['Lexend',sans-serif] font-normal gap-[10px] grid grid-cols-[repeat(3,_minmax(0px,_1fr))] grid-rows-[repeat(3,_minmax(0px,_1fr))] leading-[0] overflow-clip relative shrink-0 size-[144px] text-[25px] text-center">
       <div className="[grid-area:1_/_1] flex flex-col justify-center relative shrink-0 text-black">
-        <p className="leading-[normal]">1</p>
+        <p className={`leading-[normal] ${isScale || isAll ? "text-[#1CAFBF]" : ""}`}>
+          {isScale || isAll ? s.toFixed(1) : 1}
+        </p>
       </div>
       <div className="[grid-area:1_/_2] flex flex-col justify-center relative shrink-0 text-black">
         <p className="leading-[normal]">0</p>
       </div>
       <div className="[grid-area:1_/_3] flex flex-col justify-center relative shrink-0 text-[#6ca512]">
-        <p className="leading-[normal]">{tx}</p>
+        <p className={`leading-[normal] ${isScale || isShear && !isAll ? "text-black" : ""}`}>
+          {isScale || (isShear && !isAll) ? 0 : tx}
+        </p>
       </div>
       <div className="[grid-area:2_/_1] flex flex-col justify-center relative shrink-0 text-black">
         <p className="leading-[normal]">0</p>
       </div>
       <div className="[grid-area:2_/_2] flex flex-col justify-center relative shrink-0 text-black">
-        <p className="leading-[normal]">1</p>
+        <p className={`leading-[normal] ${isScale || isAll ? "text-[#1CAFBF]" : ""}`}>
+          {isScale || isAll ? s.toFixed(1) : 1}
+        </p>
       </div>
       <div className="[grid-area:2_/_3] flex flex-col justify-center relative shrink-0 text-[#8000af]">
-        <p className="leading-[normal]">{ty}</p>
+        <p className={`leading-[normal] ${isScale || isShear && !isAll ? "text-black" : ""}`}>
+          {isScale || (isShear && !isAll) ? 0 : ty}
+        </p>
       </div>
       <div className="[grid-area:3_/_1] flex flex-col justify-center relative shrink-0 text-black">
-        <p className="leading-[normal]">0</p>
+        <p className={`leading-[normal] ${isShear || isAll ? "text-[#FF9D00]" : ""}`}>
+          {isShear || isAll ? g : 0}
+        </p>
       </div>
       <div className="[grid-area:3_/_2] flex flex-col justify-center relative shrink-0 text-black">
-        <p className="leading-[normal]">0</p>
+        <p className={`leading-[normal] ${isShear || isAll ? "text-[#EC2DA0]" : ""}`}>
+          {isShear || isAll ? h : 0}
+        </p>
       </div>
       <div className="[grid-area:3_/_3] flex flex-col justify-center relative shrink-0 text-black">
         <p className="leading-[normal]">1</p>
@@ -272,7 +305,30 @@ function MatrixGrid({ tx, ty }: { tx: number; ty: number }) {
   );
 }
 
-function Frame1({ tx, ty }: { tx: number; ty: number }) {
+function Frame1({
+  level,
+  tx,
+  ty,
+  s,
+  g,
+  h,
+}: {
+  level: number;
+  tx: number;
+  ty: number;
+  s: number;
+  g: number;
+  h: number;
+}) {
+  const mode =
+    level === 3 || level === 4
+      ? "scale"
+      : level === 5 || level === 6 || level === 7
+        ? "shear"
+        : level >= 8
+          ? "all"
+          : "translate";
+
   return (
     <div className="bg-white box-border gap-[50px] grid items-center justify-items-center grid-cols-[32px_minmax(0,_1fr)_32px] grid-rows-[repeat(2,_minmax(0px,_1fr))] h-[273px] overflow-clip pb-[100px] pt-[30px] px-[30px] relative rounded-[30px] shrink-0 w-[310px]">
       <div
@@ -314,7 +370,7 @@ function Frame1({ tx, ty }: { tx: number; ty: number }) {
         </div>
       </div>
       <div className="[grid-area:2_/_2] w-[144px] justify-self-center">
-        <MatrixGrid tx={tx} ty={ty} />
+        <MatrixGrid mode={mode} tx={tx} ty={ty} s={s} g={g} h={h} />
       </div>
     </div>
   );
@@ -468,50 +524,265 @@ function Group2({
   );
 }
 
+function ScaleSlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const slider = e.currentTarget;
+    const rect = slider.getBoundingClientRect();
+
+    const updateValue = (clientX: number) => {
+      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      const ratio = x / rect.width;
+      const newValue = Math.round(ratio * 30) / 10; // 0.0 - 3.0
+      onChange(newValue);
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      updateValue(moveEvent.clientX);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    updateValue(e.clientX);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const clamped = Math.max(0, Math.min(value, 3));
+  const position = (clamped / 3) * 229;
+  const barWidth = position;
+
+  return (
+    <div
+      className="h-[11px] relative shrink-0 w-[229px] cursor-pointer"
+      onMouseDown={handleMouseDown}
+    >
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 229 11"
+      >
+        <g id="ScaleSlider">
+          <rect
+            fill="var(--fill-0, #D9D9D9)"
+            height="11"
+            rx="5.5"
+            width="229"
+          />
+          <rect
+            fill="var(--fill-0, #00E6FF)"
+            height="11"
+            rx="5.5"
+            width={barWidth}
+          />
+          <circle cx={position} cy="5.5" fill="var(--fill-0, #1CAFBF)" r="5.5" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function ShearSlider({
+  value,
+  onChange,
+  barColor,
+  thumbColor,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+  barColor: string;
+  thumbColor: string;
+}) {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const slider = e.currentTarget;
+    const rect = slider.getBoundingClientRect();
+
+    const updateValue = (clientX: number) => {
+      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      const newValue = Math.round((x / rect.width) * 100 - 50);
+      onChange(newValue);
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      updateValue(moveEvent.clientX);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    updateValue(e.clientX);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const position = ((value + 50) / 100) * 229;
+  const barWidth = position;
+
+  return (
+    <div
+      className="h-[11px] relative shrink-0 w-[229px] cursor-pointer"
+      onMouseDown={handleMouseDown}
+    >
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 229 11"
+      >
+        <g id="ShearSlider">
+          <rect fill="var(--fill-0, #D9D9D9)" height="11" rx="5.5" width="229" />
+          <rect fill={barColor} height="11" rx="5.5" width={barWidth} />
+          <circle cx={position} cy="5.5" fill={thumbColor} r="5.5" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 function Frame3({
+  level,
   tx,
   ty,
+  s,
+  g,
+  h,
   onTxChange,
   onTyChange,
+  onSChange,
+  onGChange,
+  onHChange,
 }: {
+  level: number;
   tx: number;
   ty: number;
+  s: number;
+  g: number;
+  h: number;
   onTxChange: (value: number) => void;
   onTyChange: (value: number) => void;
+  onSChange: (value: number) => void;
+  onGChange: (value: number) => void;
+  onHChange: (value: number) => void;
 }) {
+  const isScaleLevel = level === 3 || level === 4;
+  const isShearLevel = level === 5 || level === 6 || level === 7;
+  const isAllLevel = level >= 8;
+
   return (
     <div className="bg-white box-border content-stretch flex flex-col gap-[17px] items-center justify-center overflow-clip p-[30px] relative rounded-[30px] shrink-0">
       <p className="font-['Lexend',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#5377d1] text-[30px] text-nowrap whitespace-pre">
         variables
       </p>
-      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#6ca512] text-[40px] text-nowrap whitespace-pre">
-        tx = {tx}
-      </p>
-      <Group3 value={tx} onChange={onTxChange} />
-      <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#8000af] text-[40px] text-nowrap whitespace-pre">
-        ty = {ty}
-      </p>
-      <Group2 value={ty} onChange={onTyChange} />
+      {isScaleLevel ? (
+        <>
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#1CAFBF] text-[40px] text-nowrap whitespace-pre">
+            s = {s.toFixed(1)}
+          </p>
+          <ScaleSlider value={s} onChange={onSChange} />
+        </>
+      ) : isShearLevel ? (
+        <>
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#FF9D00] text-[40px] text-nowrap whitespace-pre">
+            g = {g}
+          </p>
+          <ShearSlider value={g} onChange={onGChange} barColor="#FFD898" thumbColor="#FF9D00" />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#EC2DA0] text-[40px] text-nowrap whitespace-pre">
+            h = {h}
+          </p>
+          <ShearSlider value={h} onChange={onHChange} barColor="#FF98D6" thumbColor="#EC2DA0" />
+        </>
+      ) : isAllLevel ? (
+        <>
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#6ca512] text-[25px] text-nowrap whitespace-pre">
+            tx = {tx}
+          </p>
+          <Group3 value={tx} onChange={onTxChange} />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#8000af] text-[25px] text-nowrap whitespace-pre">
+            ty = {ty}
+          </p>
+          <Group2 value={ty} onChange={onTyChange} />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#1CAFBF] text-[25px] text-nowrap whitespace-pre">
+            s = {s.toFixed(1)}
+          </p>
+          <ScaleSlider value={s} onChange={onSChange} />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#FF9D00] text-[25px] text-nowrap whitespace-pre">
+            g = {g}
+          </p>
+          <ShearSlider value={g} onChange={onGChange} barColor="#FFD898" thumbColor="#FF9D00" />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#EC2DA0] text-[25px] text-nowrap whitespace-pre">
+            h = {h}
+          </p>
+          <ShearSlider value={h} onChange={onHChange} barColor="#FF98D6" thumbColor="#EC2DA0" />
+        </>
+      ) : (
+        <>
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#6ca512] text-[30px] text-nowrap whitespace-pre">
+            tx = {tx}
+          </p>
+          <Group3 value={tx} onChange={onTxChange} />
+          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#8000af] text-[30px] text-nowrap whitespace-pre">
+            ty = {ty}
+          </p>
+          <Group2 value={ty} onChange={onTyChange} />
+        </>
+      )}
     </div>
   );
 }
 
 function Question({
+  level,
   tx,
   ty,
+  s,
+  g,
+  h,
   onTxChange,
   onTyChange,
+  onSChange,
+  onGChange,
+  onHChange,
 }: {
+  level: number;
   tx: number;
   ty: number;
+  s: number;
+  g: number;
+  h: number;
   onTxChange: (value: number) => void;
   onTyChange: (value: number) => void;
+  onSChange: (value: number) => void;
+  onGChange: (value: number) => void;
+  onHChange: (value: number) => void;
 }) {
   return (
-    <div className="box-border content-stretch flex gap-[32px] items-center justify-center px-[40px] py-[35px] relative w-full">
+    <div className="box-border content-stretch flex gap-[30px] items-center justify-center px-[40px] py-[30px] relative w-full">
       <Frame />
-      <Frame1 tx={tx} ty={ty} />
-      <Frame3 tx={tx} ty={ty} onTxChange={onTxChange} onTyChange={onTyChange} />
+      <Frame1 level={level} tx={tx} ty={ty} s={s} g={g} h={h} />
+      <Frame3
+        level={level}
+        tx={tx}
+        ty={ty}
+        s={s}
+        g={g}
+        h={h}
+        onTxChange={onTxChange}
+        onTyChange={onTyChange}
+        onSChange={onSChange}
+        onGChange={onGChange}
+        onHChange={onHChange}
+      />
     </div>
   );
 }
@@ -522,29 +793,48 @@ function Problem({
   onNextLevel,
   tx,
   ty,
+  s,
+  g,
+  h,
   onTxChange,
   onTyChange,
+  onSChange,
+  onGChange,
+  onHChange,
 }: {
   level: number;
   onPrevLevel: () => void;
   onNextLevel: () => void;
   tx: number;
   ty: number;
+  s: number;
+  g: number;
+  h: number;
   onTxChange: (value: number) => void;
   onTyChange: (value: number) => void;
+  onSChange: (value: number) => void;
+  onGChange: (value: number) => void;
+  onHChange: (value: number) => void;
 }) {
   return (
     <div
-      className="content-stretch flex flex-col items-start relative shrink-0 w-[1005px]"
+      className="content-stretch flex flex-col relative shrink-0"
       data-name="problem"
     >
       <Heading level={level} onPrev={onPrevLevel} onNext={onNextLevel} />
       <Tutorial level={level} />
       <Question
+        level={level}
         tx={tx}
         ty={ty}
+        s={s}
+        g={g}
+        h={h}
         onTxChange={onTxChange}
         onTyChange={onTyChange}
+        onSChange={onSChange}
+        onGChange={onGChange}
+        onHChange={onHChange}
       />
     </div>
   );
@@ -554,23 +844,50 @@ function Frame5() {
   return <div className="h-[70px] shrink-0" />;
 }
 
-function Frame4() {
+function Frame4({
+  level,
+  tx,
+  ty,
+}: {
+  level: number;
+  tx: number;
+  ty: number;
+}) {
+  const isLevel1 = level === 1;
+  const solvedLevel1 = isLevel1 && tx === 20 && ty === 20;
+  const bg = solvedLevel1 ? "#FF4040" : "#ca6262";
+  const textColor = solvedLevel1 ? "#ffffff" : "#bebebe";
+  const handleClick = () => {
+    if (solvedLevel1) {
+      window.location.href = "/level/2";
+    }
+  };
+
   return (
-    <div className="bg-[#ca6262] box-border content-stretch flex gap-[10px] h-[51px] items-center justify-center overflow-clip px-[41px] py-px relative rounded-[15px] shrink-0">
-      <p className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[#bebebe] text-[30px] text-center w-[85px]">
+    <button
+      type="button"
+      onClick={handleClick}
+      className="box-border content-stretch flex gap-[10px] h-[51px] items-center justify-center overflow-clip px-[41px] py-px relative rounded-[15px] shrink-0 transition-colors"
+      style={{ backgroundColor: bg }}
+      disabled={isLevel1 && !solvedLevel1}
+    >
+      <p
+        className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[30px] text-center w-[85px]"
+        style={{ color: textColor }}
+      >
         next
       </p>
-    </div>
+    </button>
   );
 }
 
-function Answer() {
+function Answer({ level, tx, ty }: { level: number; tx: number; ty: number }) {
   return (
     <div
-      className="bg-[#ff9e9e] box-border content-stretch flex flex-col gap-[40px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0"
+      className="bg-[#ff9e9e] box-border align-center justify-center content-stretch flex flex-col gap-[20px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0"
       data-name="answer"
     >
-      <p className="font-['Lexend',sans-serif] font-normal h-[100px] leading-[normal] relative shrink-0 text-[100px] text-white w-[227px]">
+      <p className="font-['Lexend',sans-serif] font-normal h-[100px] leading-[normal] relative shrink-0 text-[50px] text-white text-center w-[227px]">
         Goal
       </p>
       <div
@@ -614,7 +931,7 @@ function Answer() {
           </div>
         </div>
       </div>
-      <Frame4 />
+      <Frame4 level={level} tx={tx} ty={ty} />
     </div>
   );
 }
@@ -623,6 +940,9 @@ export default function Main({ level }: { level: number }) {
   const router = useRouter();
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
+  const [s, setS] = useState(1);
+  const [g, setG] = useState(0);
+  const [h, setH] = useState(0);
   const handlePrevLevel = () => {
     if (level > 1) {
       router.push(`/level/${level - 1}`);
@@ -637,7 +957,7 @@ export default function Main({ level }: { level: number }) {
 
   return (
     <div
-      className="bg-[#ffd3d3] content-stretch flex items-center relative size-full justify-space-between"
+      className="bg-[#ffd3d3] content-stretch flex items-center relative size-full"
       data-name="MAIN"
     >
       <Problem
@@ -646,10 +966,16 @@ export default function Main({ level }: { level: number }) {
         onNextLevel={handleNextLevel}
         tx={tx}
         ty={ty}
+        s={s}
+        g={g}
+        h={h}
         onTxChange={setTx}
         onTyChange={setTy}
+        onSChange={setS}
+        onGChange={setG}
+        onHChange={setH}
       />
-      <Answer />
+      <Answer level={level} tx={tx} ty={ty} />
     </div>
   );
 }
