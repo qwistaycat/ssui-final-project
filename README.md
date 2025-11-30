@@ -14,3 +14,5 @@ npm run dev
 - Next.js 16.0.5
 - Tailwind CSS 4.1.17
 
+## Code:
+Technical notes and documentation for Main.tsx are in my-app/README.md.
