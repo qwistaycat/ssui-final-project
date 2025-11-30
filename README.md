@@ -10,7 +10,7 @@ npm run dev
 ```
 
 ## Framework / Toolkit dependencies:
-- React.js
-- Next.js
-- Tailwind CSS
+- React.js 19.2.0
+- Next.js 16.0.5
+- Tailwind CSS 4.1.17
 
