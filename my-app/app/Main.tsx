@@ -2,9 +2,63 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-rgf6n3wvt2";
 import scottyImg from "./assets/images/scotty.png";
+
+declare global {
+  interface Window {
+    katex?: {
+      render: (tex: string, el: HTMLElement, options?: Record<string, unknown>) => void;
+    };
+  }
+}
+
+function MathFormula({ latex }: { latex: string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let attempts = 0;
+    const maxAttempts = 20;
+    const tryRender = () => {
+      if (window.katex) {
+        try {
+          window.katex.render(latex, el, { throwOnError: false });
+        } catch (e) {
+          el.textContent = latex;
+        }
+        return true;
+      }
+      return false;
+    };
+
+    if (tryRender()) return;
+
+    const interval = setInterval(() => {
+      attempts += 1;
+      if (tryRender() || attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 150);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [latex]);
+
+  return (
+    <span
+      ref={ref}
+      className="inline-block bg-white rounded px-3 py-2 text-black"
+      aria-label="Math formula"
+    >
+      {latex}
+    </span>
+  );
+}
 
 function ArrowButton({
   disabled,
@@ -107,7 +161,8 @@ const tutorialTexts = [
   {
     intro:
       "Welcome to AffineAffinity, a game where you do affine transformations on images of Scotty by writing transformation matrices!",
-    info: "Transformation matrices warp images by changing their pixel indices. Translation matrices shift images without stretching or rotating them.",
+    info: "An affine transform multiplies homogeneous coordinates in [x, y, 1] by a 3x3 matrix to produce new coordinates—each column of the matrix controls how x, y, and translation combine to form the new position.",
+    latex: "\\begin{aligned} &\\begin{bmatrix}x'\\\\y'\\\\1\\end{bmatrix} = M \\cdot \\begin{bmatrix}x\\\\y\\\\1\\end{bmatrix}\\\\[6pt] &\\text{where } M = \\begin{bmatrix}s & g & tx\\\\ h & s & ty\\\\ 0 & 0 & 1\\end{bmatrix}\\end{aligned}",
     link: {
       href: "https://en.wikipedia.org/wiki/Affine_transformation",
       label: "Here's more information about transformation matrices.",
@@ -212,6 +267,11 @@ function Tutorial({ level }: { level: number }) {
             ))}
           </ul>
         )}
+        {tutorialText.latex && (
+          <div className="mb-4">
+            <MathFormula latex={tutorialText.latex} />
+          </div>
+        )}
         {tutorialText.action && <p className="mb-0">{tutorialText.action}</p>}
       </div>
     </div>
@@ -248,6 +308,10 @@ function MatrixGrid({
   s,
   g,
   h,
+  showG,
+  showH,
+  forceGColor = false,
+  forceHColor = false,
 }: {
   mode: "translate" | "scale" | "shear" | "all";
   tx: number;
@@ -255,10 +319,16 @@ function MatrixGrid({
   s: number;
   g: number;
   h: number;
+  showG: boolean;
+  showH: boolean;
+  forceGColor?: boolean;
+  forceHColor?: boolean;
 }) {
   const isScale = mode === "scale";
   const isShear = mode === "shear";
   const isAll = mode === "all";
+  const effectiveG = showG ? g : 0;
+  const effectiveH = showH ? h : 0;
 
   return (
     <div className="[grid-area:2_/_2] bg-white font-['Lexend',sans-serif] font-normal gap-[10px] grid grid-cols-[repeat(3,_minmax(0px,_1fr))] grid-rows-[repeat(3,_minmax(0px,_1fr))] leading-[0] overflow-clip relative shrink-0 size-[144px] text-[25px] text-center">
@@ -289,13 +359,29 @@ function MatrixGrid({
         </p>
       </div>
       <div className="[grid-area:3_/_1] flex flex-col justify-center relative shrink-0 text-black">
-        <p className={`leading-[normal] ${isShear || isAll ? "text-[#FF9D00]" : ""}`}>
-          {isShear || isAll ? g : 0}
+        <p
+          className={`leading-[normal] ${
+            isShear || isAll
+              ? forceGColor || effectiveG !== 0
+                ? "text-[#FF9D00]"
+                : "text-black"
+              : ""
+          }`}
+        >
+          {isShear || isAll ? effectiveG : 0}
         </p>
       </div>
       <div className="[grid-area:3_/_2] flex flex-col justify-center relative shrink-0 text-black">
-        <p className={`leading-[normal] ${isShear || isAll ? "text-[#EC2DA0]" : ""}`}>
-          {isShear || isAll ? h : 0}
+        <p
+          className={`leading-[normal] ${
+            isShear || isAll
+              ? forceHColor || effectiveH !== 0
+                ? "text-[#EC2DA0]"
+                : "text-black"
+              : ""
+          }`}
+        >
+          {isShear || isAll ? effectiveH : 0}
         </p>
       </div>
       <div className="[grid-area:3_/_3] flex flex-col justify-center relative shrink-0 text-black">
@@ -328,6 +414,8 @@ function Frame1({
         : level >= 8
           ? "all"
           : "translate";
+  const showG = level === 5 || level === 7 || level >= 8;
+  const showH = level === 6 || level === 7 || level >= 8;
 
   return (
     <div className="bg-white box-border gap-[50px] grid items-center justify-items-center grid-cols-[32px_minmax(0,_1fr)_32px] grid-rows-[repeat(2,_minmax(0px,_1fr))] h-[273px] overflow-clip pb-[100px] pt-[30px] px-[30px] relative rounded-[30px] shrink-0 w-[310px]">
@@ -370,7 +458,18 @@ function Frame1({
         </div>
       </div>
       <div className="[grid-area:2_/_2] w-[144px] justify-self-center">
-        <MatrixGrid mode={mode} tx={tx} ty={ty} s={s} g={g} h={h} />
+        <MatrixGrid
+          mode={mode}
+          tx={tx}
+          ty={ty}
+          s={s}
+          g={g}
+          h={h}
+          showG={showG}
+          showH={showH}
+          forceGColor={level === 5 || level >= 7}
+          forceHColor={level === 6 || level >= 7}
+        />
       </div>
     </div>
   );
@@ -677,6 +776,8 @@ function Frame3({
 }) {
   const isScaleLevel = level === 3 || level === 4;
   const isShearLevel = level === 5 || level === 6 || level === 7;
+  const isGOnly = level === 5;
+  const isHOnly = level === 6;
   const isAllLevel = level >= 8;
 
   return (
@@ -693,14 +794,22 @@ function Frame3({
         </>
       ) : isShearLevel ? (
         <>
-          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#FF9D00] text-[40px] text-nowrap whitespace-pre">
-            g = {g}
-          </p>
-          <ShearSlider value={g} onChange={onGChange} barColor="#FFD898" thumbColor="#FF9D00" />
-          <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#EC2DA0] text-[40px] text-nowrap whitespace-pre">
-            h = {h}
-          </p>
-          <ShearSlider value={h} onChange={onHChange} barColor="#FF98D6" thumbColor="#EC2DA0" />
+          {!isHOnly && (
+            <>
+              <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#FF9D00] text-[40px] text-nowrap whitespace-pre">
+                g = {g}
+              </p>
+              <ShearSlider value={g} onChange={onGChange} barColor="#FFD898" thumbColor="#FF9D00" />
+            </>
+          )}
+          {!isGOnly && (
+            <>
+              <p className="font-['Lexend',sans-serif] font-bold leading-[normal] relative shrink-0 text-[#EC2DA0] text-[40px] text-nowrap whitespace-pre">
+                h = {h}
+              </p>
+              <ShearSlider value={h} onChange={onHChange} barColor="#FF98D6" thumbColor="#EC2DA0" />
+            </>
+          )}
         </>
       ) : isAllLevel ? (
         <>
@@ -848,18 +957,51 @@ function Frame4({
   level,
   tx,
   ty,
+  s,
+  g,
+  h,
 }: {
   level: number;
   tx: number;
   ty: number;
+  s: number;
+  g: number;
+  h: number;
 }) {
-  const isLevel1 = level === 1;
-  const solvedLevel1 = isLevel1 && tx === 20 && ty === 20;
-  const bg = solvedLevel1 ? "#FF4040" : "#ca6262";
-  const textColor = solvedLevel1 ? "#ffffff" : "#bebebe";
+  const targets: Record<
+    number,
+    { tx?: number; ty?: number; s?: number; g?: number; h?: number; nextLevel: number }
+  > = {
+    1: { tx: 20, ty: 20, nextLevel: 2 },
+    2: { tx: -10, ty: -30, nextLevel: 3 },
+    3: { s: 0.5, nextLevel: 4 },
+    4: { s: 2.5, nextLevel: 5 },
+    5: { g: 20, nextLevel: 6 },
+    6: { h: 40, nextLevel: 7 },
+    7: { g: 25, h: 10, nextLevel: 8 },
+    8: { tx: 25, ty: 25, s: 1.0, g: 0, h: 15, nextLevel: 9 },
+    9: { tx: -20, ty: 0, s: 2.0, g: 15, h: 0, nextLevel: 10 },
+    10: { tx: -15, ty: 20, s: 1.5, g: -30, h: 20, nextLevel: 10 },
+  };
+
+  const target = targets[level];
+  const solved =
+    target !== undefined &&
+    (target.tx === undefined || target.tx === tx) &&
+    (target.ty === undefined || target.ty === ty) &&
+    (target.s === undefined || target.s === s) &&
+    (target.g === undefined || target.g === g) &&
+    (target.h === undefined || target.h === h);
+  const gateLevel = target !== undefined;
+
+  const isFinalLevel = level === 10;
+  const bg = solved ? (isFinalLevel ? "#5377D1" : "#FF4040") : "#ca6262";
+  const textColor = solved ? "#ffffff" : "#bebebe";
+  const buttonText = isFinalLevel && solved ? "congrats!" : "next";
+
   const handleClick = () => {
-    if (solvedLevel1) {
-      window.location.href = "/level/2";
+    if (solved && target && !isFinalLevel) {
+      window.location.href = `/level/${target.nextLevel}`;
     }
   };
 
@@ -867,21 +1009,40 @@ function Frame4({
     <button
       type="button"
       onClick={handleClick}
-      className="box-border content-stretch flex gap-[10px] h-[51px] items-center justify-center overflow-clip px-[41px] py-px relative rounded-[15px] shrink-0 transition-colors"
+      className="box-border content-stretch flex gap-[10px] h-[51px] items-center justify-center align-center overflow-clip px-[41px] py-px relative rounded-[15px] shrink-0 transition-colors mx-auto"
       style={{ backgroundColor: bg }}
-      disabled={isLevel1 && !solvedLevel1}
+      disabled={(gateLevel && !solved) || isFinalLevel}
     >
       <p
-        className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[30px] text-center w-[85px]"
+        className="font-['Lexend',sans-serif] font-normal h-[40px] leading-[normal] relative shrink-0 text-[25px] text-center w-[120px]"
         style={{ color: textColor }}
       >
-        next
+        {buttonText}
       </p>
     </button>
   );
 }
 
-function Answer({ level, tx, ty }: { level: number; tx: number; ty: number }) {
+function Answer({ level, tx, ty, s, g, h }: { level: number; tx: number; ty: number; s: number; g: number; h: number }) {
+  const goalTargets: Record<number, { offset: { x: number; y: number }; scale: number; shear: { x: number; y: number } }> = {
+    1: { offset: { x: 20, y: 20 }, scale: 1, shear: { x: 0, y: 0 } },
+    2: { offset: { x: -10, y: -30 }, scale: 1, shear: { x: 0, y: 0 } },
+    3: { offset: { x: 0, y: 0 }, scale: 0.5, shear: { x: 0, y: 0 } },
+    4: { offset: { x: 0, y: 0 }, scale: 2.5, shear: { x: 0, y: 0 } },
+    5: { offset: { x: 0, y: 0 }, scale: 1, shear: { x: 20, y: 0 } },
+    6: { offset: { x: 0, y: 0 }, scale: 1, shear: { x: 0, y: 40 } },
+    7: { offset: { x: 0, y: 0 }, scale: 1, shear: { x: 25, y: 10 } },
+    8: { offset: { x: 25, y: 25 }, scale: 1, shear: { x: 0, y: 15 } },
+    9: { offset: { x: -20, y: 0 }, scale: 2.0, shear: { x: 15, y: 0 } },
+    10: { offset: { x: -15, y: 20 }, scale: 1.5, shear: { x: -30, y: 20 } },
+  };
+
+  const goal = goalTargets[level] ?? { offset: { x: 0, y: 0 }, scale: 1, shear: { x: 0, y: 0 } };
+  const goalTransform = `translate(${goal.offset.x}px, ${goal.offset.y}px) skew(${goal.shear.x}deg, ${goal.shear.y}deg) scale(${goal.scale})`;
+  const shearX = level >= 5 ? g : 0;
+  const shearY = level >= 5 ? h : 0;
+  const liveTransform = `translate(${tx}px, ${ty}px) skew(${shearX}deg, ${shearY}deg) scale(${s})`;
+
   return (
     <div
       className="bg-[#ff9e9e] box-border align-center justify-center content-stretch flex flex-col gap-[20px] items-center overflow-clip px-[70px] py-[20px] relative shrink-0"
@@ -906,32 +1067,23 @@ function Answer({ level, tx, ty }: { level: number; tx: number; ty: number }) {
               fill
               className="object-contain"
               sizes="236px"
+              style={{ transform: goalTransform }}
             />
           </div>
         </div>
       </div>
       <Frame5 />
-      <div
-        className="relative shrink-0 size-[236px]"
-        data-name="mascotStory_236x236 2"
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none"
-        >
-          <div className="absolute bg-black inset-0" />
-          <div className="absolute inset-0 overflow-hidden">
-            <Image
-              alt="Scotty transformed"
-              src={scottyImg}
-              fill
-              className="object-contain"
-              sizes="236px"
-            />
-          </div>
-        </div>
+      <div className="relative shrink-0 size-[236px] overflow-hidden bg-black">
+        <Image
+          alt="Scotty transformed"
+          src={scottyImg}
+          fill
+          className="object-contain pointer-events-none transition-transform duration-150"
+          style={{ transform: liveTransform }}
+          sizes="236px"
+        />
       </div>
-      <Frame4 level={level} tx={tx} ty={ty} />
+      <Frame4 level={level} tx={tx} ty={ty} s={s} g={g} h={h} />
     </div>
   );
 }
@@ -975,7 +1127,7 @@ export default function Main({ level }: { level: number }) {
         onGChange={setG}
         onHChange={setH}
       />
-      <Answer level={level} tx={tx} ty={ty} />
+      <Answer level={level} tx={tx} ty={ty} s={s} g={g} h={h} />
     </div>
   );
 }

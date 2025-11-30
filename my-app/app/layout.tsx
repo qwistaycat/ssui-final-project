@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend, Madimi_One } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -26,9 +27,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lexend.variable} ${madimiOne.variable} antialiased`}>
-        {children}
-      </body>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+          crossOrigin="anonymous"
+        />
+        <Script
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+          strategy="afterInteractive"
+        />
+      </head>
+      <body className={`${lexend.variable} ${madimiOne.variable} antialiased`}>{children}</body>
     </html>
   );
 }
