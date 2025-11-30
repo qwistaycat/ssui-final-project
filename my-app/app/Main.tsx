@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import svgPaths from "./svg-rgf6n3wvt2";
+import svgPaths from "./assets/images/svg-rgf6n3wvt2";
 import scottyImg from "./assets/images/scotty.png";
 
 // Shape of per-level targets for success checks
