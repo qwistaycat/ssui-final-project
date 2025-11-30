@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import svgPaths from "./svg-rgf6n3wvt2";
 import scottyImg from "./assets/images/scotty.png";
 
+// Shape of per-level targets for success checks
 type LevelTarget = {
   tx?: number;
   ty?: number;
@@ -15,6 +16,7 @@ type LevelTarget = {
   nextLevel: number;
 };
 
+// LocalStorage key for persisted slider values
 const STORAGE_VALUES_KEY = "affineAffinityValues";
 
 declare global {
@@ -35,6 +37,7 @@ function getDefaultValues(level: number) {
   };
 }
 
+// Render a LaTeX snippet with KaTeX when available; fall back to text
 function MathFormula({ latex }: { latex: string }) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
@@ -81,6 +84,7 @@ function MathFormula({ latex }: { latex: string }) {
   );
 }
 
+// Sidebar progress list that shows completion per level and supports navigation
 function ProgressMenu({
   level,
   solvedLevels,
@@ -126,6 +130,7 @@ function ProgressMenu({
   );
 }
 
+// Arrow buttons used in the level selector
 function ArrowButton({
   disabled,
   onClick,
@@ -165,6 +170,7 @@ function ArrowButton({
   );
 }
 
+// Level selector widget shown in the header
 function Components({
   level,
   onPrev,
@@ -197,6 +203,7 @@ function Components({
   );
 }
 
+// Page header with title + level navigation
 function Heading({
   level,
   onPrev,
@@ -223,6 +230,7 @@ function Heading({
   );
 }
 
+// Tutorial copy per level (intro, info, links, LaTeX, tasks)
 const tutorialTexts = [
   {
     intro:
@@ -335,6 +343,7 @@ function isLevelSolved(
   );
 }
 
+// Tutorial text renderer for current level (includes links, bullets, LaTeX)
 function Tutorial({ level }: { level: number }) {
   const clampedIndex = Math.min(
     Math.max(level - 1, 0),
@@ -389,6 +398,7 @@ function Tutorial({ level }: { level: number }) {
   );
 }
 
+// Displays the original Scotty image
 function Frame() {
   return (
     <div className="bg-white box-border content-stretch flex flex-col gap-[14px] items-center justify-center overflow-clip pb-[30px] pt-[19px] px-[21px] relative rounded-[30px] shrink-0">
@@ -412,6 +422,7 @@ function Frame() {
   );
 }
 
+// Renders the matrix values based on current mode and slider values
 function MatrixGrid({
   mode,
   tx,
@@ -502,6 +513,7 @@ function MatrixGrid({
   );
 }
 
+// Matrix card with brackets and grid inside
 function Frame1({
   level,
   tx,
@@ -586,6 +598,7 @@ function Frame1({
   );
 }
 
+// tx slider (green) with drag handling
 function Group3({
   value,
   onChange,
@@ -660,6 +673,7 @@ function Group3({
   );
 }
 
+// ty slider (purple) with drag handling
 function Group2({
   value,
   onChange,
@@ -734,6 +748,7 @@ function Group2({
   );
 }
 
+// s (scale) slider (teal/blue) clamped to 0.0–3.0
 function ScaleSlider({
   value,
   onChange,
@@ -801,6 +816,7 @@ function ScaleSlider({
   );
 }
 
+// g/h shear slider with configurable colors
 function ShearSlider({
   value,
   onChange,
@@ -860,6 +876,7 @@ function ShearSlider({
   );
 }
 
+// Variables card: shows controls based on level mode and a reset button
 function Frame3({
   level,
   tx,
@@ -970,6 +987,7 @@ function Frame3({
   );
 }
 
+// Main question row for a level
 function Question({
   level,
   tx,
@@ -1019,6 +1037,7 @@ function Question({
   );
 }
 
+// Wraps heading, tutorial, and question for the left column
 function Problem({
   level,
   onPrevLevel,
@@ -1127,6 +1146,7 @@ function Frame4({
   );
 }
 
+// Goal/answer column with target and live images plus gating button
 function Answer({ level, tx, ty, s, g, h }: { level: number; tx: number; ty: number; s: number; g: number; h: number }) {
   const goalTargets: Record<number, { offset: { x: number; y: number }; scale: number; shear: { x: number; y: number } }> = {
     1: { offset: { x: 20, y: 20 }, scale: 1, shear: { x: 0, y: 0 } },
@@ -1192,6 +1212,7 @@ function Answer({ level, tx, ty, s, g, h }: { level: number; tx: number; ty: num
   );
 }
 
+// Root page component: handles routing, persistence, solved tracking, and layout
 export default function Main({ level }: { level: number }) {
   const router = useRouter();
   const defaults = getDefaultValues(level);
