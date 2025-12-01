@@ -29,9 +29,9 @@ The game lives in `app/Main.tsx`. Key pieces:
 - **Targets and gating**: `getLevelTarget` defines per-level goals (tx/ty/s/g/h). `isLevelSolved` compares current values to targets. When solved, the “next” button lights up and moves to the next level (Level 10 shows a “congrats” state). The progress menu uses the same solve check. A “Reset all” button appears once all levels are solved and clears both sliders and solved state.
 - **Transforms**: The goal and live Scotty images use CSS transforms to show translation, scale, and skew based on the current level and slider values. Level-specific goal transforms mirror the targets (e.g., Level 3 scales down, Level 5 skews horizontally, etc.).
 - **Matrix/variables UI**: Matrix layout adapts per level (translate, scale, shear, or all). The variables card swaps sliders accordingly (single `s` on scale levels, `g` or `h` on shear levels, all controls on later levels) and includes a per-level reset button.
+  - Even though transformations are implemented in CSS for smoother transformation animations and optimization, I double-checked with a separate Jupyterhub notebook with OpenCV by actually doing the matrix multiplication myself to make sure the simulation was visually correct.
+  - <img width="496" height="669" alt="Screenshot 2025-12-01 at 4 35 40 PM" src="https://github.com/user-attachments/assets/c0dc3647-4f0f-45d8-bc0b-bfc99057c7b5" />
 - **Progress menu**: Clickable levels; completion checkmarks only appear when a level is actually solved. Shows a “Reset all” button after all 10 are completed.
-- **Tutorial + math**: Level 1 tutorial includes a KaTeX-rendered matrix equation with a labeled `M` (including tx/ty/s/g/h). KaTeX CSS/JS is loaded in `app/layout.tsx`. Additional inline links (wiki + Flexbox Froggy) sit in the tutorial text.
-- **Assets**: Scotty image is imported from `app/assets/images/scotty.png`; arrow SVG path sits in `app/svg-rgf6n3wvt2.ts`.
 
 ## Learn More
 
