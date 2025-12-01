@@ -337,7 +337,7 @@ const tutorialTexts = [
       "Scaling (s) resizes the image.",
       "Shearing (g, h) skews the image.",
     ],
-    action: "Try to warp Scotty to match the image on top.",
+    action: "Try to warp Scotty to match the image on top. HINT: All numbers are divisible by 5.",
   },
   {
     intro:" Great, do it again!",
@@ -347,17 +347,17 @@ const tutorialTexts = [
       "Scaling (s) resizes the image.",
       "Shearing (g, h) skews the image.",
     ],
-    action: "Try to warp Scotty to match the image on top.",
+    action: "Try to warp Scotty to match the image on top. HINT: All numbers are divisible by 5.",
   },
   {
-    intro: "Final challenge!",
+    intro: "Final challenge! This one's really hard, so don't worry if you don't get it immediately.",
     info: "Remember how these transformations build on each other in the matrix:",
     bullets: [
       "Translation (tx, ty) shifts position.",
       "Scaling (s) resizes the image.",
       "Shearing (g, h) skews the image.",
     ],
-    action: "Try to warp Scotty to match the image on top.",
+    action: "Try to warp Scotty to match the image on top. HINT: All numbers are divisible by 5.",
   },
 ];
 
